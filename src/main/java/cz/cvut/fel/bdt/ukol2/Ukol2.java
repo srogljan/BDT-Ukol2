@@ -13,6 +13,7 @@ import org.apache.hadoop.io.WritableComparator;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Partitioner;
+import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
@@ -24,7 +25,7 @@ import cz.cvut.fel.bdt.cli.ArgumentParser;
 
 
 /**
- * Implementace ukolu 2
+ * Implementace ukolu 2 zalozena na kodu z BDT
  * @author Jan Srogl
  */
 public class Ukol2 extends Configured implements Tool
@@ -121,7 +122,7 @@ public class Ukol2 extends Configured implements Tool
      * 
      * NOTE: The received list may not contain only 1s if a combiner is used.
      */
-/*    public static class Ukol2Reducer extends Reducer<Text, IntWritable, Text, IntWritable>
+    public static class Ukol2Reducer extends Reducer<Text, IntWritable, Text, IntWritable>
     {
         public void reduce(Text text, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException
         {
@@ -134,7 +135,7 @@ public class Ukol2 extends Configured implements Tool
 
             context.write(text, new IntWritable(sum));
         }
-    }/**/
+    }
 
     /**
      * This is where the MapReduce job is configured and being launched.
@@ -186,6 +187,7 @@ public class Ukol2 extends Configured implements Tool
         // reducers with the following line.
         //
         // job.setNumReduceTasks(1);
+        job.setNumReduceTasks(0);
 
         // Specify (key, value).
         job.setOutputKeyClass(Text.class);
