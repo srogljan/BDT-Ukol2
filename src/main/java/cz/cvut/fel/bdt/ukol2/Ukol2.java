@@ -22,6 +22,7 @@ import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
 import cz.cvut.fel.bdt.cli.ArgumentParser;
+import java.time.Instant;
 
 
 /**
@@ -89,17 +90,29 @@ public class Ukol2 extends Configured implements Tool
      */
     public static class Ukol2Mapper extends Mapper<Object, Text, Text, IntWritable>
     {
-        private final IntWritable ONE = new IntWritable(1);
+        private IntWritable ONE = new IntWritable(1);
         private Text word = new Text();
+        private final Long MIN_DF = 10L;
+        private final Long MAX_DF = 10L;
 
         public void map(Object key, Text value, Context context) throws IOException, InterruptedException
         {
             String[] words = value.toString().split(" ");
 
             for (String term : words)
-            {            	
-            	word.set(term);            
-            	context.write(word, ONE);            	
+            {       
+                Integer pom;
+                try
+                {
+                    pom = Integer.parseInt(term);
+                    if ((pom < MIN_DF) || (pom > MAX_DF)) continue;
+                    else ONE.set(pom);
+                    context.write(word, ONE);
+                }
+                catch(NumberFormatException nfe) 
+                {
+                    word.set(term);
+                }            	            	
             }
         }
     }
