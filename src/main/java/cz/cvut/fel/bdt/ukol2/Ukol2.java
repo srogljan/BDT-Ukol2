@@ -97,20 +97,9 @@ public class Ukol2 extends Configured implements Tool
             String[] words = value.toString().split(" ");
 
             for (String term : words)
-            {
-            	try  
-            	{  
-            		double d = Double.parseDouble(term);  
-            	}  
-            	catch(NumberFormatException nfe) { continue; }
-            	if (term.matches("{{.*}}")) continue;
-            	
-            	
-            	if ((term.length() >= 3) && (term.length() <= 24))
-            	{
-            		word.set(term);            
-            		context.write(word, ONE);
-            	}
+            {            	
+            	word.set(term);            
+            	context.write(word, ONE);            	
             }
         }
     }
@@ -170,7 +159,7 @@ public class Ukol2 extends Configured implements Tool
 
         // Setup MapReduce.
         job.setMapperClass(Ukol2Mapper.class);
-        //job.setReducerClass(Ukol2Reducer.class);
+        job.setReducerClass(Ukol2Reducer.class);
 
         // Make use of a combiner - in this simple case
         // it is the same as the reducer.
@@ -187,7 +176,6 @@ public class Ukol2 extends Configured implements Tool
         // reducers with the following line.
         //
         // job.setNumReduceTasks(1);
-        job.setNumReduceTasks(0);
 
         // Specify (key, value).
         job.setOutputKeyClass(Text.class);
