@@ -28,7 +28,7 @@
 				<configuration>
 					<archive>
 						<manifest>
-							<mainClass>cz.cvut.bigdata.WordCountMPv1.WordCount</mainClass>
+							<mainClass>cz.cvut.fel.bdt.ukol2.Ukol2</mainClass>
 						</manifest>
 					</archive>
 				</configuration>
