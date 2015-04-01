@@ -1,6 +1,8 @@
 package cz.cvut.fel.bdt.ukol2;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
@@ -95,23 +97,28 @@ public class Ukol2 extends Configured implements Tool
         public void map(Object key, Text value, Context context) throws IOException, InterruptedException
         {
             String[] words = value.toString().split(" ");
+            StringBuilder sb = new StringBuilder();
 
             for (String term : words)
             {
             	try  
             	{  
             		double d = Double.parseDouble(term);  
+            		continue;
             	}  
-            	catch(NumberFormatException nfe) { continue; }
-            	if (term.matches("{{.*}}")) continue;
+            	catch(NumberFormatException nfe) {  }
+            	if (term.matches("</?.*>")) continue;
             	
             	
             	if ((term.length() >= 3) && (term.length() <= 24))
             	{
-            		word.set(term);            
-            		context.write(word, ONE);
+            		sb.append(' ').append(term);
+            		//word.set(term);            
+            		//context.write(word, ONE);
             	}
             }
+            word.set(sb.toString());
+            context.write(word, ONE);
         }
     }
 
