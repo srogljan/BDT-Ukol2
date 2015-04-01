@@ -107,7 +107,7 @@ public class Ukol2 extends Configured implements Tool
             		continue;
             	}  
             	catch(NumberFormatException nfe) {  }
-            	if (term.matches("</?.*>")) continue;
+            	if (term.matches(".*</?.*>")) continue;
             	
             	
             	if ((term.length() >= 3) && (term.length() <= 24))
