@@ -96,7 +96,10 @@ public class Ukol2 extends Configured implements Tool
 
         public void map(Object key, Text value, Context context) throws IOException, InterruptedException
         {
-            String[] words = value.toString().split(" ");
+        	String pom = value.toString().replaceAll("</?.*>", "");
+        	pom = pom.replaceAll("<.*/?>", "");
+        	
+            String[] words = pom.split(" ");
             StringBuilder sb = new StringBuilder();
 
             for (String term : words)
@@ -107,18 +110,19 @@ public class Ukol2 extends Configured implements Tool
             		continue;
             	}  
             	catch(NumberFormatException nfe) {  }
-            	if (term.matches(".*</?.*>")) continue;
             	
+            	if (term.length() < 3) continue;
+            	if (term.length() > 24) continue;
             	
-            	if ((term.length() >= 3) && (term.length() <= 24))
-            	{
-            		sb.append(' ').append(term);
-            		//word.set(term);            
-            		//context.write(word, ONE);
-            	}
+            	sb.append(' ').append(term);
+
             }
-            word.set(sb.toString());
-            context.write(word, ONE);
+            if (sb.length() > 0) 
+            {
+            	sb.deleteCharAt(0);
+            	word.set(sb.toString());            
+            	context.write(word, null);
+            }
         }
     }
 
