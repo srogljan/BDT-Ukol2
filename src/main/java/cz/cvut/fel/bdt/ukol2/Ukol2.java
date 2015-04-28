@@ -98,8 +98,16 @@ public class Ukol2 extends Configured implements Tool
         {
         	String pom = value.toString().replaceAll("</?.*>", "");
         	pom = pom.replaceAll("<.*/?>", "");
+        	pom = pom.replace('.', ' ')
+        			 .replace(',', ' ')
+        			 .replace('/', ' ')
+        			 .replace(':', ' ')
+        			 .replace(';', ' ');
+        	
+        	pom = pom.toLowerCase();
         	
             String[] words = pom.split(" ");
+            
             StringBuilder sb = new StringBuilder();
 
             for (String term : words)
@@ -113,6 +121,8 @@ public class Ukol2 extends Configured implements Tool
             	
             	if (term.length() < 3) continue;
             	if (term.length() > 24) continue;
+            	
+            	
             	
             	sb.append(' ').append(term);
 
