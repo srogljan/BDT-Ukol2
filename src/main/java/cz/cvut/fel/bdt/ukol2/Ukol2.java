@@ -102,7 +102,11 @@ public class Ukol2 extends Configured implements Tool
         			 .replace(',', ' ')
         			 .replace('/', ' ')
         			 .replace(':', ' ')
-        			 .replace(';', ' ');
+        			 .replace(';', ' ')
+        			 .replace('(', ' ')
+        			 .replace(')', ' ')
+        			 .replace('[', ' ')
+        			 .replace(']', ' ');
         	
         	pom = pom.toLowerCase();
         	
