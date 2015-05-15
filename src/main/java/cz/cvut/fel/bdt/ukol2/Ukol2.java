@@ -7,6 +7,7 @@ import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.WritableComparator;
@@ -22,6 +23,7 @@ import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
 import cz.cvut.fel.bdt.cli.ArgumentParser;
+
 
 
 /**
@@ -87,11 +89,11 @@ public class Ukol2 extends Configured implements Tool
      * because we do not use it anyway, and emits (word, 1) for each occurrence of the word
      * in the line of text (i.e. the received value).
      */
-    public static class Ukol2Mapper extends Mapper<IntWritable, Text, Text, IntWritable>
+    public static class Ukol2Mapper extends Mapper<LongWritable, Text, Text, LongWritable>
     {
         private Text word = new Text();
 
-        public void map(IntWritable key, Text value, Context context) throws IOException, InterruptedException
+        public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException
         {
             String[] words = value.toString().split(" ");
 
@@ -112,13 +114,13 @@ public class Ukol2 extends Configured implements Tool
      */
     public static class Ukol2Reducer extends Reducer<Text, IntWritable, Text, IntWritable>
     {
-        public void reduce(Text text, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException
+        public void reduce(Text text, Iterable<LongWritable> values, Context context) throws IOException, InterruptedException
         {
             int sum = 0;
 
-            for (IntWritable value : values)
+            for (LongWritable value : values)
             {
-                sum += value.get();
+                sum++;
             }
 
             context.write(text, new IntWritable(sum));
