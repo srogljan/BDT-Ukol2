@@ -17,6 +17,7 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Partitioner;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.KeyValueTextInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
@@ -69,11 +70,11 @@ public class Ukol2 extends Configured implements Tool
      *  00001          15 -- 29
      *  00003          30 -- OO
      */
-    public static class WordLengthPartitioner extends Partitioner<Text, IntWritable>
+    public static class WordLengthPartitioner extends Partitioner<IntWritable, Text>
     {
         private static final int MAXIMUM_LENGTH_SPAN = 30;
         
-        @Override public int getPartition(Text key, IntWritable value, int numOfPartitions)
+        @Override public int getPartition(IntWritable key, Text value, int numOfPartitions)
         {
             if (numOfPartitions == 1)
                 return 0;
@@ -89,12 +90,12 @@ public class Ukol2 extends Configured implements Tool
      * because we do not use it anyway, and emits (word, 1) for each occurrence of the word
      * in the line of text (i.e. the received value).
      */
-    public static class Ukol2Mapper extends Mapper<Object, Text, Text, IntWritable>
+    public static class Ukol2Mapper extends Mapper<Text, Text, IntWritable, Text>
     {
         private final IntWritable ONE = new IntWritable(1);
         private Text word = new Text();
 
-        public void map(Object key, Text value, Context context) throws IOException, InterruptedException
+        public void map(Text key, Text value, Context context) throws IOException, InterruptedException
         {
         	String pom = value.toString().replaceAll("</?.*>", "");
         	pom = pom.replaceAll("<.*/?>", "");
@@ -139,7 +140,7 @@ public class Ukol2 extends Configured implements Tool
             {
             	sb.deleteCharAt(0);
             	word.set(sb.toString());            
-            	context.write(word, null);
+            	context.write(new IntWritable(Integer.parseInt(key.toString())),word);
             }
         }
     }
@@ -151,7 +152,7 @@ public class Ukol2 extends Configured implements Tool
      * 
      * NOTE: The received list may not contain only 1s if a combiner is used.
      */
-    public static class Ukol2Reducer extends Reducer<Text, IntWritable, Text, IntWritable>
+    public static class Ukol2Reducer extends Reducer<IntWritable, Text, Text, IntWritable>
     {
         public void reduce(Text text, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException
         {
@@ -224,7 +225,7 @@ public class Ukol2 extends Configured implements Tool
 
         // Input.
         FileInputFormat.addInputPath(job, inputPath);
-        job.setInputFormatClass(TextInputFormat.class);
+        job.setInputFormatClass(KeyValueTextInputFormat.class);
 
         // Output.
         FileOutputFormat.setOutputPath(job, outputDir);
