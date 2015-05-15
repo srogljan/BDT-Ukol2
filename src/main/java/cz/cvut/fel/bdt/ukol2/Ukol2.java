@@ -156,14 +156,14 @@ public class Ukol2 extends Configured implements Tool
         // Create job.
         Job job = new Job(conf, "Ukol2");
         job.setJarByClass(Ukol2Mapper.class);
-
+        
         // Setup MapReduce.
         job.setMapperClass(Ukol2Mapper.class);
         job.setReducerClass(Ukol2Reducer.class);
 
         // Make use of a combiner - in this simple case
         // it is the same as the reducer.
-        //job.setCombinerClass(Ukol2Reducer.class);
+        job.setCombinerClass(Ukol2Reducer.class);
 
         // Sort the output words in reversed order.
         job.setSortComparatorClass(Ukol2Comparator.class);
@@ -175,7 +175,7 @@ public class Ukol2 extends Configured implements Tool
         // to be 1, similarly you can set up the number of
         // reducers with the following line.
         //
-        // job.setNumReduceTasks(1);
+         job.setNumReduceTasks(20);
 
         // Specify (key, value).
         job.setOutputKeyClass(Text.class);
