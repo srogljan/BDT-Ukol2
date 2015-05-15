@@ -7,7 +7,6 @@ import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.WritableComparator;
@@ -16,6 +15,7 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Partitioner;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.KeyValueTextInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
@@ -23,6 +23,7 @@ import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
 import cz.cvut.fel.bdt.cli.ArgumentParser;
+
 
 
 
@@ -89,18 +90,19 @@ public class Ukol2 extends Configured implements Tool
      * because we do not use it anyway, and emits (word, 1) for each occurrence of the word
      * in the line of text (i.e. the received value).
      */
-    public static class Ukol2Mapper extends Mapper<LongWritable, Text, Text, LongWritable>
+    public static class Ukol2Mapper extends Mapper<Text, Text, Text, IntWritable>
     {
         private Text word = new Text();
 
-        public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException
+        public void map(Text key, Text value, Context context) throws IOException, InterruptedException
         {
+        	Integer pom = Integer.parseInt(key.toString());
             String[] words = value.toString().split(" ");
 
             for (String term : words)
             {            	
             	word.set(term);            
-            	context.write(word, key);            	
+            	context.write(word, new IntWritable(pom));            	
             }
         }
     }
@@ -114,11 +116,11 @@ public class Ukol2 extends Configured implements Tool
      */
     public static class Ukol2Reducer extends Reducer<Text, IntWritable, Text, IntWritable>
     {
-        public void reduce(Text text, Iterable<LongWritable> values, Context context) throws IOException, InterruptedException
+        public void reduce(Text text, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException
         {
             int sum = 0;
 
-            for (LongWritable value : values)
+            for (IntWritable value : values)
             {
                 sum++;
             }
@@ -184,7 +186,7 @@ public class Ukol2 extends Configured implements Tool
 
         // Input.
         FileInputFormat.addInputPath(job, inputPath);
-        job.setInputFormatClass(TextInputFormat.class);
+        job.setInputFormatClass(KeyValueTextInputFormat.class);
 
         // Output.
         FileOutputFormat.setOutputPath(job, outputDir);
