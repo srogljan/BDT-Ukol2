@@ -87,19 +87,18 @@ public class Ukol2 extends Configured implements Tool
      * because we do not use it anyway, and emits (word, 1) for each occurrence of the word
      * in the line of text (i.e. the received value).
      */
-    public static class Ukol2Mapper extends Mapper<Object, Text, Text, IntWritable>
+    public static class Ukol2Mapper extends Mapper<IntWritable, Text, Text, IntWritable>
     {
-        private final IntWritable ONE = new IntWritable(1);
         private Text word = new Text();
 
-        public void map(Object key, Text value, Context context) throws IOException, InterruptedException
+        public void map(IntWritable key, Text value, Context context) throws IOException, InterruptedException
         {
             String[] words = value.toString().split(" ");
 
             for (String term : words)
             {            	
             	word.set(term);            
-            	context.write(word, ONE);            	
+            	context.write(word, key);            	
             }
         }
     }
