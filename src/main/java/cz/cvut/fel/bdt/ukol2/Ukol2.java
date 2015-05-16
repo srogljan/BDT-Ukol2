@@ -193,7 +193,7 @@ public class Ukol2 extends Configured implements Tool
         // when running the job from the console.
         //
         // Configuration conf = new Configuration(true);
-
+        conf.set("mapreduce.textoutputformat.separator", "\t");
         // Create job.
         Job job = new Job(conf, "Ukol2");
         job.setJarByClass(Ukol2Mapper.class);
