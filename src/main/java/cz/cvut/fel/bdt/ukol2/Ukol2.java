@@ -95,13 +95,14 @@ public class Ukol2 extends Configured implements Tool
     public static class Ukol2Mapper extends Mapper<Text, Text, Text, IntWritable>
     {
         private Text word = new Text();
+        private IntWritable ONE = new IntWritable(1);
 
         public void map(Text key, Text value, Context context) throws IOException, InterruptedException
         {
-        	Integer pom = Integer.parseInt(key.toString());
             String[] words = value.toString().split(" ");
             Set<String> occurances = new HashSet<String>();
-
+                       
+      
             for (String term : words)
             {        
             	occurances.add(term);            	
@@ -110,7 +111,7 @@ public class Ukol2 extends Configured implements Tool
             for (String string : occurances) 
             {
             	word.set(string);            
-            	context.write(word, new IntWritable(Integer.parseInt(key.toString())));
+            	context.write(word, ONE);
             }
         }
     }
@@ -130,7 +131,7 @@ public class Ukol2 extends Configured implements Tool
 
             for (IntWritable value : values)
             {
-                sum++;
+                sum+=value.get();
             }
 
             context.write(text, new IntWritable(sum));
