@@ -146,7 +146,7 @@ public class Ukol2 extends Configured implements Tool
 
         // Create configuration.
         Configuration conf = getConf();
-        
+        conf.set("mapreduce.textoutputformat.separator", "\t");        
         // Using the following line instead of the previous 
         // would result in using the default configuration
         // settings. You would not have a change, for example,
