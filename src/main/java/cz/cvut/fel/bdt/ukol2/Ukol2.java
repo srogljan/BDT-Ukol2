@@ -1,6 +1,8 @@
 package cz.cvut.fel.bdt.ukol2;
 
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
@@ -15,6 +17,7 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Partitioner;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.KeyValueTextInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
@@ -23,6 +26,8 @@ import org.apache.hadoop.util.ToolRunner;
 
 import cz.cvut.fel.bdt.cli.ArgumentParser;
 import java.time.Instant;
+
+
 
 
 /**
@@ -88,31 +93,26 @@ public class Ukol2 extends Configured implements Tool
      * because we do not use it anyway, and emits (word, 1) for each occurrence of the word
      * in the line of text (i.e. the received value).
      */
-    public static class Ukol2Mapper extends Mapper<Object, Text, Text, IntWritable>
+    public static class Ukol2Mapper extends Mapper<Text, Text, Text, IntWritable>
     {
-        private IntWritable ONE = new IntWritable(1);
         private Text word = new Text();
-        private final Long MIN_DF = 10L;
-        private final Long MAX_DF = 10L;
+        private IntWritable ONE = new IntWritable(1);
 
-        public void map(Object key, Text value, Context context) throws IOException, InterruptedException
+        public void map(Text key, Text value, Context context) throws IOException, InterruptedException
         {
             String[] words = value.toString().split(" ");
-
+            Set<String> occurances = new HashSet<String>();
+                       
+      
             for (String term : words)
-            {       
-                Integer pom;
-                try
-                {
-                    pom = Integer.parseInt(term);
-                    if ((pom < MIN_DF) || (pom > MAX_DF)) continue;
-                    else ONE.set(pom);
-                    context.write(word, ONE);
-                }
-                catch(NumberFormatException nfe) 
-                {
-                    word.set(term);
-                }            	            	
+            {        
+            	occurances.add(term);            	
+            }
+            
+            for (String string : occurances) 
+            {
+            	word.set(string);            
+            	context.write(word, ONE);
             }
         }
     }
@@ -132,7 +132,7 @@ public class Ukol2 extends Configured implements Tool
 
             for (IntWritable value : values)
             {
-                sum += value.get();
+                sum+=value.get();
             }
 
             context.write(text, new IntWritable(sum));
@@ -156,7 +156,7 @@ public class Ukol2 extends Configured implements Tool
 
         // Create configuration.
         Configuration conf = getConf();
-        
+        conf.set("mapreduce.textoutputformat.separator", "\t");        
         // Using the following line instead of the previous 
         // would result in using the default configuration
         // settings. You would not have a change, for example,
@@ -169,14 +169,14 @@ public class Ukol2 extends Configured implements Tool
         // Create job.
         Job job = new Job(conf, "Ukol2");
         job.setJarByClass(Ukol2Mapper.class);
-
+        
         // Setup MapReduce.
         job.setMapperClass(Ukol2Mapper.class);
         job.setReducerClass(Ukol2Reducer.class);
 
         // Make use of a combiner - in this simple case
         // it is the same as the reducer.
-        //job.setCombinerClass(Ukol2Reducer.class);
+        job.setCombinerClass(Ukol2Reducer.class);
 
         // Sort the output words in reversed order.
         job.setSortComparatorClass(Ukol2Comparator.class);
@@ -188,7 +188,7 @@ public class Ukol2 extends Configured implements Tool
         // to be 1, similarly you can set up the number of
         // reducers with the following line.
         //
-        // job.setNumReduceTasks(1);
+         job.setNumReduceTasks(20);
 
         // Specify (key, value).
         job.setOutputKeyClass(Text.class);
@@ -196,7 +196,7 @@ public class Ukol2 extends Configured implements Tool
 
         // Input.
         FileInputFormat.addInputPath(job, inputPath);
-        job.setInputFormatClass(TextInputFormat.class);
+        job.setInputFormatClass(KeyValueTextInputFormat.class);
 
         // Output.
         FileOutputFormat.setOutputPath(job, outputDir);
