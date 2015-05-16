@@ -1,11 +1,15 @@
 package cz.cvut.fel.bdt.ukol2;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
+import java.net.URI;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
+import org.apache.hadoop.filecache.DistributedCache;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
@@ -25,6 +29,7 @@ import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
 import cz.cvut.fel.bdt.cli.ArgumentParser;
+
 import java.time.Instant;
 
 
@@ -93,27 +98,56 @@ public class Ukol2 extends Configured implements Tool
      * because we do not use it anyway, and emits (word, 1) for each occurrence of the word
      * in the line of text (i.e. the received value).
      */
-    public static class Ukol2Mapper extends Mapper<Text, Text, Text, IntWritable>
+    public static class Ukol2Mapper extends Mapper<Text, Text, IntWritable, Text>
     {
         private Text word = new Text();
-        private IntWritable ONE = new IntWritable(1);
-
+        private HashSet<String> cache = null;
+        
         public void map(Text key, Text value, Context context) throws IOException, InterruptedException
         {
+        	if (cache == null)
+        	{
+        		//Nacteni cache ze souboru        		    
+        		BufferedReader br = null;
+        		try
+        		{
+            		Path[] uris = DistributedCache.getLocalCacheFiles(context.getConfiguration());
+            		if ((uris !=null) && (uris.length > 0))
+            		{
+            			System.out.println("Using cache from file: " + uris[0].toString());
+        				br = new BufferedReader(new FileReader(uris[0].toString()));        			
+        				String s = null;
+            			while((s = br.readLine()) != null)
+            			{
+            				cache.add(s.split("\t")[0]);            			
+            			}
+            		}
+            		else System.out.println("nejsou zadne cache soubory!");
+        		}
+        		catch(Exception e)
+        		{
+        			System.out.println("Chyba pri cteni souboru cache!");
+        		}
+        		finally
+        		{
+        			br.close();
+        		}
+        	}
+        	
             String[] words = value.toString().split(" ");
-            Set<String> occurances = new HashSet<String>();
                        
-      
+            StringBuilder sb = new StringBuilder();
             for (String term : words)
             {        
-            	occurances.add(term);            	
+            	if (cache.contains(term))
+            	{
+            		sb.append(term).append(" ");
+            	}
             }
+            if (sb.length() > 0) sb.setLength(sb.length()-1);
             
-            for (String string : occurances) 
-            {
-            	word.set(string);            
-            	context.write(word, ONE);
-            }
+            word.set(sb.toString());            
+            context.write(new IntWritable(Integer.valueOf(key.toString())), word);            
         }
     }
 
@@ -148,15 +182,18 @@ public class Ukol2 extends Configured implements Tool
 
         parser.addArgument("input", true, true, "specify input directory");
         parser.addArgument("output", true, true, "specify output directory");
+        parser.addArgument("dictionary", true, true, "specify input cache file");
 
         parser.parseAndCheck(arguments);
 
         Path inputPath = new Path(parser.getString("input"));
         Path outputDir = new Path(parser.getString("output"));
+        String cacheFile = parser.getString("dictionary");
 
         // Create configuration.
         Configuration conf = getConf();
-        conf.set("mapreduce.textoutputformat.separator", "\t");        
+        conf.set("mapreduce.textoutputformat.separator", "\t"); 
+        DistributedCache.addCacheFile(new URI(cacheFile), conf);
         // Using the following line instead of the previous 
         // would result in using the default configuration
         // settings. You would not have a change, for example,
@@ -167,7 +204,7 @@ public class Ukol2 extends Configured implements Tool
         // Configuration conf = new Configuration(true);
 
         // Create job.
-        Job job = new Job(conf, "Ukol2");
+        Job job = new Job(conf, "Ukol2-step4");
         job.setJarByClass(Ukol2Mapper.class);
         
         // Setup MapReduce.
@@ -188,7 +225,7 @@ public class Ukol2 extends Configured implements Tool
         // to be 1, similarly you can set up the number of
         // reducers with the following line.
         //
-         job.setNumReduceTasks(20);
+         job.setNumReduceTasks(0);
 
         // Specify (key, value).
         job.setOutputKeyClass(Text.class);
