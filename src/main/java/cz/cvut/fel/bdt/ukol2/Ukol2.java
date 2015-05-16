@@ -1,6 +1,8 @@
 package cz.cvut.fel.bdt.ukol2;
 
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
@@ -98,11 +100,17 @@ public class Ukol2 extends Configured implements Tool
         {
         	Integer pom = Integer.parseInt(key.toString());
             String[] words = value.toString().split(" ");
+            Set<String> occurances = new HashSet<String>();
 
             for (String term : words)
-            {            	
-            	word.set(term);            
-            	context.write(word, new IntWritable(pom));            	
+            {        
+            	occurances.add(term);            	
+            }
+            
+            for (String string : occurances) 
+            {
+            	word.set(string);            
+            	context.write(word, new IntWritable(Integer.parseInt(key.toString())));
             }
         }
     }
