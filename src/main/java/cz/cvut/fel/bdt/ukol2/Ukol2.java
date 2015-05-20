@@ -3,6 +3,7 @@ package cz.cvut.fel.bdt.ukol2;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URI;
 import java.util.HashSet;
 import java.util.Set;
@@ -99,40 +100,50 @@ public class Ukol2 extends Configured implements Tool
      * in the line of text (i.e. the received value).
      */
     public static class Ukol2Mapper extends Mapper<Text, Text, IntWritable, Text>
-    {
-        private Text word = new Text();
+    {        
+
+		private Text word = new Text();
         private HashSet<String> cache = null;
+    
+        @Override
+		protected void setup(
+				Mapper<Text, Text, IntWritable, Text>.Context context)
+				throws IOException, InterruptedException {
+			super.setup(context);
+
+
+    		//Nacteni cache ze souboru        		    
+    		BufferedReader br = null;
+    		try
+    		{
+        		URI[] uris = DistributedCache.getCacheFiles(context.getConfiguration());
+        		
+        		FileSystem fs = FileSystem.getLocal(context.getConfiguration());
+        		
+        		if ((uris !=null) && (uris.length > 0))
+        		{
+        			System.out.println("Using cache from file: " + uris[0].toString());
+    				br = new BufferedReader(new InputStreamReader(fs.open(new Path(uris[0].getPath()))));        			
+    				String s = null;
+        			while((s = br.readLine()) != null)
+        			{
+        				cache.add(s.split("\t")[0]);            			
+        			}
+        		}
+        		else System.out.println("nejsou zadne cache soubory!");
+    		}
+    		catch(Exception e)
+    		{
+    			System.out.println("Chyba pri cteni souboru cache!");
+    		}
+    		finally
+    		{
+    			if (br != null) br.close();
+    		}
+		}
         
         public void map(Text key, Text value, Context context) throws IOException, InterruptedException
         {
-        	if (cache == null)
-        	{
-        		//Nacteni cache ze souboru        		    
-        		BufferedReader br = null;
-        		try
-        		{
-            		Path[] uris = DistributedCache.getLocalCacheFiles(context.getConfiguration());
-            		if ((uris !=null) && (uris.length > 0))
-            		{
-            			System.out.println("Using cache from file: " + uris[0].toString());
-        				br = new BufferedReader(new FileReader(uris[0].toString()));        			
-        				String s = null;
-            			while((s = br.readLine()) != null)
-            			{
-            				cache.add(s.split("\t")[0]);            			
-            			}
-            		}
-            		else System.out.println("nejsou zadne cache soubory!");
-        		}
-        		catch(Exception e)
-        		{
-        			System.out.println("Chyba pri cteni souboru cache!");
-        		}
-        		finally
-        		{
-        			br.close();
-        		}
-        	}
         	
             String[] words = value.toString().split(" ");
                        
@@ -190,6 +201,9 @@ public class Ukol2 extends Configured implements Tool
         Path outputDir = new Path(parser.getString("output"));
         String cacheFile = parser.getString("dictionary");
 
+        
+        System.out.println(cacheFile);
+        
         // Create configuration.
         Configuration conf = getConf();
         conf.set("mapreduce.textoutputformat.separator", "\t"); 
