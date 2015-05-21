@@ -116,14 +116,15 @@ public class Ukol2 extends Configured implements Tool
     		BufferedReader br = null;
     		try
     		{
-        		URI[] uris = DistributedCache.getCacheFiles(context.getConfiguration());
+    			Configuration cntx = context.getConfiguration();
+    			
+        		Path[] uris = DistributedCache.getLocalCacheFiles(cntx);
         		
-        		FileSystem fs = FileSystem.getLocal(context.getConfiguration());
         		
         		if ((uris !=null) && (uris.length > 0))
         		{
         			System.out.println("Using cache from file: " + uris[0].toString());
-    				br = new BufferedReader(new InputStreamReader(fs.open(new Path(uris[0].getPath()))));        			
+    				br = new BufferedReader(new FileReader(uris[0].toString()));        			
     				String s = null;
         			while((s = br.readLine()) != null)
         			{
