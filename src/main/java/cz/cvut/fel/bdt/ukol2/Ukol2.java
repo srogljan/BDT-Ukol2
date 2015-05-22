@@ -200,15 +200,15 @@ public class Ukol2 extends Configured implements Tool
 
         Path inputPath = new Path(parser.getString("input"));
         Path outputDir = new Path(parser.getString("output"));
-        String cacheFile = parser.getString("dictionary");
+        //String cacheFile = parser.getString("dictionary");
 
         
-        System.out.println(cacheFile);
+        //System.out.println(cacheFile);
         
         // Create configuration.
         Configuration conf = getConf();
         conf.set("mapreduce.textoutputformat.separator", "\t"); 
-        DistributedCache.addCacheFile(new URI(cacheFile), conf);
+        //DistributedCache.addCacheFile(new URI(cacheFile), conf);
         // Using the following line instead of the previous 
         // would result in using the default configuration
         // settings. You would not have a change, for example,
@@ -258,7 +258,7 @@ public class Ukol2 extends Configured implements Tool
 
         // Delete output directory (if exists).
         if (hdfs.exists(outputDir))
-            hdfs.delete(outputDir, true);
+           hdfs.delete(outputDir, true);
 
         // Execute the job.
         return job.waitForCompletion(true) ? 0 : 1;
