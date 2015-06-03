@@ -1,6 +1,7 @@
 package cz.cvut.fel.bdt.ukol2;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -118,17 +119,18 @@ public class Ukol2 extends Configured implements Tool
     		{
     			Configuration cntx = context.getConfiguration();
     			
-        		Path[] uris = DistributedCache.getLocalCacheFiles(cntx);
+        		//Path[] uris = DistributedCache.getLocalCacheFiles(cntx);
+
+        		File f = new File("./dictionary.txt");
         		
-        		
-        		if ((uris !=null) && (uris.length > 0))
+        		if (f !=null)
         		{
-        			System.out.println("Using cache from file: " + uris[0].toString());
-    				br = new BufferedReader(new FileReader(uris[0].toString()));        			
+        			System.out.println("Using cache from file: " + f.getPath());
+    				br = new BufferedReader(new FileReader(f));        			
     				String s = null;
         			while((s = br.readLine()) != null)
         			{
-        				cache.add(s.split("\t")[0]);            			
+        				cache.add(s.split("\t")[0]);
         			}
         		}
         		else System.out.println("nejsou zadne cache soubory!");
@@ -159,7 +161,7 @@ public class Ukol2 extends Configured implements Tool
             if (sb.length() > 0) sb.setLength(sb.length()-1);
             
             word.set(sb.toString());            
-            context.write(new IntWritable(Integer.valueOf(key.toString())), word);            
+            context.write(new IntWritable(Integer.parseInt(key.toString())), word);            
         }
     }
 
