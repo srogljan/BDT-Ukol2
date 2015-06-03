@@ -190,7 +190,7 @@ public class Ukol2 extends Configured implements Tool
      */
     @Override public int run(String[] arguments) throws Exception
     {
-        ArgumentParser parser = new ArgumentParser("Ukol2");
+        /*ArgumentParser parser = new ArgumentParser("Ukol2");
 
         parser.addArgument("input", true, true, "specify input directory");
         parser.addArgument("output", true, true, "specify output directory");
@@ -200,15 +200,19 @@ public class Ukol2 extends Configured implements Tool
 
         Path inputPath = new Path(parser.getString("input"));
         Path outputDir = new Path(parser.getString("output"));
-        //String cacheFile = parser.getString("dictionary");
+        String cacheFile = parser.getString("dictionary");/**/
 
-        
+    	
+    	Path inputPath = new Path(arguments[0]);
+        Path outputDir = new Path(arguments[1]);
+    	
+        System.out.println(inputPath);
+        System.out.println(outputDir);
         //System.out.println(cacheFile);
         
         // Create configuration.
         Configuration conf = getConf();
         conf.set("mapreduce.textoutputformat.separator", "\t"); 
-        //DistributedCache.addCacheFile(new URI(cacheFile), conf);
         // Using the following line instead of the previous 
         // would result in using the default configuration
         // settings. You would not have a change, for example,
@@ -221,6 +225,16 @@ public class Ukol2 extends Configured implements Tool
         // Create job.
         Job job = new Job(conf, "Ukol2-step4");
         job.setJarByClass(Ukol2Mapper.class);
+        
+        /*try
+        {
+        	DistributedCache.setCacheFiles(new URI[] {new URI(cacheFile)}, job.getConfiguration());
+        	//addCacheFile(new URI(cacheFile), job.getConfiguration());
+        }
+        catch(Exception e)
+        {
+        	System.out.println(e);
+        }/**/
         
         // Setup MapReduce.
         job.setMapperClass(Ukol2Mapper.class);
