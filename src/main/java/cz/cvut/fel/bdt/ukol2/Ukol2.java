@@ -118,10 +118,13 @@ public class Ukol2 extends Configured implements Tool
     		try
     		{
     			Configuration cntx = context.getConfiguration();
-    			
-        		//Path[] uris = DistributedCache.getLocalCacheFiles(cntx);
-
-        		File f = new File("./dictionary.txt");
+    			System.out.println("BEFORE CACHE");
+        		Path[] uris = DistributedCache.getLocalCacheFiles(cntx);
+        		System.out.println("AFTER CACHE" + " Obsah promenne s cache files " + uris);
+        		        		
+        		File f = new File(uris[0].toString());
+        		
+        		System.out.println("AFTER FILE");
         		
         		if (f !=null)
         		{
@@ -137,7 +140,7 @@ public class Ukol2 extends Configured implements Tool
     		}
     		catch(Exception e)
     		{
-    			System.out.println("Chyba pri cteni souboru cache!");
+    			System.out.println("Chyba pri cteni souboru cache! \n" + ">" + e + "<");
     		}
     		finally
     		{
