@@ -117,10 +117,10 @@ public class Ukol2 extends Configured implements Tool
     		BufferedReader br = null;
     		try
     		{
-    			Configuration cntx = context.getConfiguration();
     			System.out.println("BEFORE CACHE");
-        		Path[] uris = DistributedCache.getLocalCacheFiles(cntx);
-        		System.out.println("AFTER CACHE" + " Obsah promenne s cache files " + uris);
+    			System.out.println("Kontext >" + context.getConfiguration() + "<");
+        		Path[] uris = DistributedCache.getLocalCacheFiles(context.getConfiguration());
+        		System.out.println("AFTER CACHE" + " Obsah promenne s cache files: " + uris);
         		        		
         		File f = new File(uris[0].toString());
         		
@@ -259,7 +259,7 @@ public class Ukol2 extends Configured implements Tool
         // to be 1, similarly you can set up the number of
         // reducers with the following line.
         //
-         job.setNumReduceTasks(0);
+        job.setNumReduceTasks(0);
 
         // Specify (key, value).
         job.setOutputKeyClass(Text.class);
